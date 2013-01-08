@@ -21,7 +21,8 @@ namespace PythonEmbrace
         public void Append(string physicalLine)
         {
             Debug.Assert( ! IsComplete );
-            _text.Append('\n' + physicalLine.TrimEnd());
+            _text.AppendLine();
+            _text.Append(physicalLine.TrimEnd());
         }
 
         public int IndentDepth
