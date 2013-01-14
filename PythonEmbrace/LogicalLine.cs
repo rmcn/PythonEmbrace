@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace PythonEmbrace
 {
@@ -16,19 +17,62 @@ namespace PythonEmbrace
             {
                 if (_lastSignificantCharIndex != -1)
                 {
+                    string significantText = _text.ToString(0, _lastSignificantCharIndex + 1);
+                    string insignificantText = _text.ToString(significantText.Length, _text.Length - significantText.Length);
+
                     if (_text[_lastSignificantCharIndex] == ':')
                     {
                         // Block start
-                        // FIXME remove colon and bracket if necessary
+                        return ConvertBlockLine(significantText) + insignificantText;
                     }
                     else
                     {
-                        // End with a semicolon
-                        _text.Insert(_lastSignificantCharIndex + 1, ';');
+                        // Add a semicolon
+                        return significantText + ";" + insignificantText;
                     }
                 }
+                else
+                {
+                    // Entirely whitespace, or just a comment
+                    return _text.ToString();
+                }
+            }
+        }
 
-                return _text.ToString();
+        private static readonly string[] BracketedKeywords = { "if", "elif", "for", "while", "except" };
+
+        private static readonly Regex BlockLinePattern =
+            new Regex(@"^(\s*)(if|else|elif|def|for|while|try|except|class)(.*):$",
+                RegexOptions.Compiled | RegexOptions.Singleline);
+
+        private string ConvertBlockLine(string significantText)
+        {
+            if (BlockLinePattern.IsMatch(significantText))
+            {
+                // FIXME remove colon and brackets if necessary
+                Match match = BlockLinePattern.Match(significantText);
+
+                string whitespace = match.Groups[1].Value;
+                string keyword = match.Groups[2].Value;
+                string remainder = match.Groups[3].Value;
+
+                bool needsBrackets = BracketedKeywords.Contains(keyword) && !remainder.TrimStart().StartsWith("(");
+
+                if (keyword == "elif")
+                {
+                    keyword = "else if";
+                }
+                else if (keyword == "except")
+                {
+                    keyword = "catch";
+                }
+
+                return whitespace + keyword + (needsBrackets ? "(" : "") + remainder + (needsBrackets ? ")" : "");
+
+            }
+            else
+            {
+                throw new Exception("Line " + _lineNumber + " ends with a : but doesn't match BlockLinePattern");
             }
         }
 

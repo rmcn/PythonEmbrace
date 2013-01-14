@@ -28,7 +28,7 @@ self.stream.unget(c);
 if c != u';':
     self.stream.unget(c)
 ----
-if c != u';':
+if( c != u';')
 {
     self.stream.unget(c);
 }
@@ -46,7 +46,7 @@ if c != u';':
 
 self.stream.unget(c)
 ----
-if c != u';':
+if( c != u';')
 {
     self.stream.unget(c);
 }
@@ -65,7 +65,7 @@ if c != u';':
 
     self.stream.unget(c)
 ----
-if c != u';':
+if( c != u';')
 {
 
     self.stream.unget(c);
@@ -85,7 +85,7 @@ if (c != u';' and
     self.stream.unget(c)
 ----
 if (c != u';' and
-        c != ','):
+        c != ',')
 {
     self.stream.unget(c);
 }
@@ -103,7 +103,7 @@ if (c != ')' and
     self.stream.unget(c)
 ----
 if (c != ')' and
-        c != ','):
+        c != ',')
 {
     self.stream.unget(c);
 }
@@ -121,7 +121,7 @@ if (c != ')\'' and
     self.stream.unget(c)
 ----
 if (c != ')\'' and
-        c != ','):
+        c != ',')
 {
     self.stream.unget(c);
 }
@@ -138,8 +138,8 @@ if c != \
         u';':
     self.stream.unget(c)
 ----
-if c != \
-        u';':
+if( c != \
+        u';')
 {
     self.stream.unget(c);
 }
