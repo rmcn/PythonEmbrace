@@ -15,7 +15,7 @@ namespace PythonEmbrace.Tests
 ----
 self.stream.unget(c)
 ----
-self.stream.unget(c)
+self.stream.unget(c);
 ----
             ");
         }
@@ -30,7 +30,7 @@ if c != u';':
 ----
 if c != u';':
 {
-    self.stream.unget(c)
+    self.stream.unget(c);
 }
 ----
             ");
@@ -48,10 +48,10 @@ self.stream.unget(c)
 ----
 if c != u';':
 {
-    self.stream.unget(c)
+    self.stream.unget(c);
 }
 
-self.stream.unget(c)
+self.stream.unget(c);
 ----
             ");
         }
@@ -68,7 +68,7 @@ if c != u';':
 if c != u';':
 {
 
-    self.stream.unget(c)
+    self.stream.unget(c);
 }
 ----
             ");
@@ -81,13 +81,13 @@ if c != u';':
             Test(@"
 ----
 if (c != u';' and
-        c != ',')
+        c != ','):
     self.stream.unget(c)
 ----
 if (c != u';' and
-        c != ',')
+        c != ','):
 {
-    self.stream.unget(c)
+    self.stream.unget(c);
 }
 ----
             ");
@@ -99,13 +99,13 @@ if (c != u';' and
             Test(@"
 ----
 if (c != ')' and
-        c != ',')
+        c != ','):
     self.stream.unget(c)
 ----
 if (c != ')' and
-        c != ',')
+        c != ','):
 {
-    self.stream.unget(c)
+    self.stream.unget(c);
 }
 ----
             ");
@@ -117,13 +117,13 @@ if (c != ')' and
             Test(@"
 ----
 if (c != ')\'' and
-        c != ',')
+        c != ','):
     self.stream.unget(c)
 ----
 if (c != ')\'' and
-        c != ',')
+        c != ','):
 {
-    self.stream.unget(c)
+    self.stream.unget(c);
 }
 ----
             ");
@@ -135,13 +135,13 @@ if (c != ')\'' and
             Test(@"
 ----
 if c != \
-        u';'
+        u';':
     self.stream.unget(c)
 ----
 if c != \
-        u';'
+        u';':
 {
-    self.stream.unget(c)
+    self.stream.unget(c);
 }
 ----
             ");

@@ -10,12 +10,33 @@ namespace PythonEmbrace
         private int _lineNumber;
         private StringBuilder _text;
 
-        public string Text { get { return _text.ToString(); } }
+        public string Text
+        {
+            get
+            {
+                if (_lastSignificantCharIndex != -1)
+                {
+                    if (_text[_lastSignificantCharIndex] == ':')
+                    {
+                        // Block start
+                        // FIXME remove colon and bracket if necessary
+                    }
+                    else
+                    {
+                        // End with a semicolon
+                        _text.Insert(_lastSignificantCharIndex + 1, ';');
+                    }
+                }
+
+                return _text.ToString();
+            }
+        }
 
         public LogicalLine(int lineNumber, string physicalLine)
         {
             _lineNumber = lineNumber;
             _text = new StringBuilder(physicalLine.TrimEnd());
+            Parse();
         }
 
         public void Append(string physicalLine)
@@ -23,6 +44,7 @@ namespace PythonEmbrace
             Debug.Assert( ! IsComplete );
             _text.AppendLine();
             _text.Append(physicalLine.TrimEnd());
+            Parse();
         }
 
         public int IndentDepth
@@ -38,9 +60,15 @@ namespace PythonEmbrace
             }
         }
 
+        private bool EndsWithLineContinuationCharacter
+        {
+            get { return _text.Length != 0 && _text[_text.Length - 1] == '\\'; }
+        }
+
+
         public bool IsComplete
         {
-            get { return BracketBalance == 0 && Text.LastOrDefault() != '\\'; }
+            get { return _bracketBalance == 0 && ! EndsWithLineContinuationCharacter; }
         }
 
         public bool IsBlank
@@ -53,19 +81,40 @@ namespace PythonEmbrace
         private static readonly char[] Opening = new char[] { '{', '(', '[' };
         private static readonly char[] Closing = new char[] { '}', ')', ']' };
 
-        private int BracketBalance
-        {
-            get
-            {
-                int balance = 0;
-                bool inString = false;
-                char stringStart = '\0';
-                char prev = '\0';
+        private int _bracketBalance;
+        private int _lastSignificantCharIndex; // Index of the last non-whitespace character before any EOL comment
 
-                foreach (char c in Text)
+        private void Parse()
+        {
+            _bracketBalance = 0;
+            _lastSignificantCharIndex = -1;
+
+            bool inString = false;
+            bool inComment = false;
+            char stringStart = '\0';
+            char prev = '\0';
+
+            for(int i=0; i < _text.Length; i++)
+            {
+                char c = _text[i];
+
+                if (inComment)
                 {
-                    if (!inString)
+                    if (c == '\n')
                     {
+                        inComment = false;
+                    }
+                }
+                else if (!inString)
+                {
+                    if (c == '#')
+                    {
+                        inComment = true;
+                    }
+                    else if (!Char.IsWhiteSpace(c))
+                    {
+                        _lastSignificantCharIndex = i;
+
                         if (c == '"' || c == '\'')
                         {
                             inString = true;
@@ -73,31 +122,30 @@ namespace PythonEmbrace
                         }
                         else if (Opening.Contains(c))
                         {
-                            balance++;
+                            _bracketBalance++;
                         }
                         else if (Closing.Contains(c))
                         {
-                            balance--;
+                            _bracketBalance--;
                         }
-                    }
-                    else
-                    {
-                        if (c == stringStart && prev != '\\')
-                        {
-                            inString = false;
-                        }
-                    }
-
-                    if (c == '\\' && prev == '\\')
-                    {
-                        prev = '\0';
-                    }
-                    else
-                    {
-                        prev = c;
                     }
                 }
-                return balance;
+                else
+                {
+                    if (c == stringStart && prev != '\\')
+                    {
+                        inString = false;
+                    }
+                }
+
+                if (c == '\\' && prev == '\\')
+                {
+                    prev = '\0';
+                }
+                else
+                {
+                    prev = c;
+                }
             }
         }
 
