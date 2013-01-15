@@ -112,7 +112,7 @@ namespace PythonEmbrace
 
         public bool IsComplete
         {
-            get { return _bracketBalance == 0 && ! EndsWithLineContinuationCharacter; }
+            get { return _bracketBalance == 0 && (! EndsWithLineContinuationCharacter) && (! _unterminatedTripleQuotedString); }
         }
 
         public bool IsBlank
@@ -127,6 +127,7 @@ namespace PythonEmbrace
 
         private int _bracketBalance;
         private int _lastSignificantCharIndex; // Index of the last non-whitespace character before any EOL comment
+        private bool _unterminatedTripleQuotedString;
 
         private void Parse()
         {
@@ -161,8 +162,17 @@ namespace PythonEmbrace
 
                         if (c == '"' || c == '\'')
                         {
-                            inString = true;
-                            stringStart = c;
+                            // Start of normal string, or triple quoted string
+                            if (SkipTripleQuotedString(ref i))
+                            {
+                                _lastSignificantCharIndex = i;
+                            }
+                            else
+                            {
+                                // it is a normal string
+                                inString = true;
+                                stringStart = c;
+                            }
                         }
                         else if (Opening.Contains(c))
                         {
@@ -191,6 +201,47 @@ namespace PythonEmbrace
                     prev = c;
                 }
             }
+        }
+
+
+        private bool SkipTripleQuotedString(ref int i)
+        {
+            char startChar = _text[i];
+
+            Debug.Assert(startChar == '\'' || startChar == '"');
+
+            // if next two characters are the same, then we have a triple quoted string
+            if (TripleQuotesAtIndex(startChar, i))
+            {
+                i += 3; // Skip opening
+
+                _unterminatedTripleQuotedString = true;
+
+                while (i < _text.Length)
+                {
+                    if (TripleQuotesAtIndex(startChar, i))
+                    {
+                        _unterminatedTripleQuotedString = false;
+                        i += 2; // Skip to last char of closing
+                        break;
+                    }
+                    i++;
+                }
+
+                return true;
+            }
+            else
+            {
+                return false; // No string to skip
+            }
+        }
+
+        private bool TripleQuotesAtIndex(char startChar, int i)
+        {
+            return _text.Length > i + 2
+                && _text[i + 0] == startChar
+                && _text[i + 1] == startChar
+                && _text[i + 2] == startChar;
         }
 
     }
