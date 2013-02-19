@@ -147,6 +147,18 @@ if( c != \
             ");
         }
 
+        [Fact]
+        public void SemiColonAfterString()
+        {
+            Test(@"
+----
+foo = 'bar'
+----
+foo = 'bar';
+----
+            ");
+        }
+
         private void Test(string test)
         {
             string[] parts = test.Split(new string[] { "----" }, StringSplitOptions.None);

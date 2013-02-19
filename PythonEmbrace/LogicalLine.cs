@@ -189,6 +189,7 @@ namespace PythonEmbrace
                     if (c == stringStart && prev != '\\')
                     {
                         inString = false;
+                        _lastSignificantCharIndex = i;
                     }
                 }
 
